@@ -9,20 +9,20 @@ from scipy.optimize import minimize_scalar
 #旋转目标半径
 r = 283 #mm
 #旋转目标转速
-rpm = 120 #rpm
+rpm = 60 #rpm
 
 #期望自瞄云台单边摆幅
 gimbal_angle = 8 #degree
 
 #云台最大角加速度
-max_acc = 200 # rad/s²
+max_acc = 80 # rad/s²
 
 #云台转动惯量估计值（仅用于扭矩计算）
 inertia = 20000  # kg·mm²
 
 #云台最大角加速度作用时间搜索范围（非线性优化，有时需要反复调整直到曲线重合度较高）
-time_length_using_max_acc_min = 38  #ms
-time_length_using_max_acc_max = 40 #ms
+time_length_using_max_acc_min = 60  #ms
+time_length_using_max_acc_max = 80 #ms
 
 #控制采样频率
 draw_sampling_rate = 4000  #Hz
@@ -287,14 +287,13 @@ if __name__ == "__main__":
     
     # 写入txt文件
     with open('sample_output.txt', 'w', encoding='utf-8') as f:
-        f.write("// 云台采样输出文件\n")
-        f.write("// 格式：{time(ms),pitch(deg),pitch_spd(rad/s),yaw(deg),yaw_spd(rad/s)},\n")
+        f.write("// sample: {time(ms),pitch(deg),pitch_spd(rad/s),yaw(deg),yaw_spd(rad/s)},\n")
         f.write("{\n")
         for i in range(len(sample_times)):
             time = sample_times[i]
             angle = sample_angles[i]
             velocity = sample_velocities[i]
-            f.write(f"{{{time:.1f},0.0,0.0,{angle:.6f},{velocity:.6f}}},\n")
+            f.write(f"{{{time}, 0.0f, 0.0f, {angle:.6f}f, {velocity:.6f}f}},\n")
         
         count = len(sample_times)
         f.write("}\n")
@@ -317,6 +316,8 @@ if __name__ == "__main__":
             if line.startswith('{') and line.strip().endswith('},'):
                 # 解析格式：{time,pitch,pit_spd,yaw,yaw_spd},
                 content = line.strip()[1:-2]  # 去掉 { 和 },
+                # 移除所有的 'f' 后缀
+                content = content.replace('f', '')
                 values = [float(x) for x in content.split(',')]
                 read_times.append(values[0])
                 read_pitch.append(values[1])
